@@ -22,12 +22,13 @@ type Game struct {
 }
 
 type Area struct {
-	Name        string
-	Description string
-	Neighbors   map[string]*Area
-	Objects     map[string]string
-	UseActions  map[string]map[string]func(*Game) string
-	LookAction  ActionFunc
+	Name           string
+	Description    string
+	Neighbors      map[string]*Area
+	NeighborsOrder []string
+	Objects        map[string]string
+	UseActions     map[string]map[string]func(*Game) string
+	LookAction     ActionFunc
 }
 
 var game Game
@@ -59,13 +60,20 @@ func initGame() {
 	}
 
 	kitchen.Neighbors = map[string]*Area{"коридор": corridor}
+	kitchen.NeighborsOrder = []string{"коридор"}
+
 	corridor.Neighbors = map[string]*Area{
 		"кухня":   kitchen,
 		"комната": room,
 		"улица":   street,
 	}
+	corridor.NeighborsOrder = []string{"кухня", "комната", "улица"}
+
 	room.Neighbors = map[string]*Area{"коридор": corridor}
+	room.NeighborsOrder = []string{"коридор"}
+
 	street.Neighbors = map[string]*Area{"домой": corridor}
+	street.NeighborsOrder = []string{"домой"}
 
 	for _, a := range []*Area{kitchen, corridor, room, street} {
 		a.UseActions = make(map[string]map[string]func(*Game) string)
@@ -234,12 +242,7 @@ func describePlaces(objects map[string]string) string {
 }
 
 func neighborsList(area *Area) string {
-	keys := make([]string, 0, len(area.Neighbors))
-	for k := range area.Neighbors {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return strings.Join(keys, ", ")
+	return strings.Join(area.NeighborsOrder, ", ")
 }
 
 func main() {
